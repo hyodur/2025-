@@ -366,15 +366,19 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
         denominator: parseInt(denominatorInput)
       });
     } else {
-      if (!mixedDenominatorInput) return;
-      
       const whole = wholeInput ? parseInt(wholeInput) : 0;
       const numerator = mixedNumeratorInput ? parseInt(mixedNumeratorInput) : 0;
-      const denominator = parseInt(mixedDenominatorInput);
+      const denominator = mixedDenominatorInput ? parseInt(mixedDenominatorInput) : 1;
       
-      if (whole === 0 && numerator === 0) return;
-      
-      userAnswer = simplifyFraction(mixedToImproper(whole, numerator, denominator));
+      // If only whole number is entered, treat as a whole number (denominator = 1)
+      if (wholeInput && !mixedNumeratorInput && !mixedDenominatorInput) {
+        userAnswer = simplifyFraction({ numerator: whole, denominator: 1 });
+      } else {
+        // Regular mixed number handling
+        if (!mixedDenominatorInput) return;
+        if (whole === 0 && numerator === 0) return;
+        userAnswer = simplifyFraction(mixedToImproper(whole, numerator, denominator));
+      }
     }
     
     const correct = fractionsEqual(userAnswer, problem.answer);
@@ -416,7 +420,9 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
     if (answerMode === 'improper') {
       return numeratorInput && denominatorInput;
     } else {
-      return mixedDenominatorInput && (wholeInput || mixedNumeratorInput);
+      // Allow submission if only whole number is entered (for whole number answers)
+      // or if both denominator and at least one of whole/numerator is entered
+      return wholeInput || (mixedDenominatorInput && mixedNumeratorInput);
     }
   };
 
