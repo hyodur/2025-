@@ -1,0 +1,6 @@
+{
+  "name": "fraction-game-classroom",
+  "buildCommand": "cd fraction-game && npm run build",
+  "outputDirectory": "fraction-game/dist",
+  "installCommand": "cd fraction-game && npm install"
+}
