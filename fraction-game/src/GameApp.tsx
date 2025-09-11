@@ -340,6 +340,7 @@ export default function GameApp() {
           <ShopScreen 
             playerData={playerData}
             onPurchase={handlePurchase}
+            onSkinChange={handleSkinChange}
             onNavigate={setCurrentScreen}
           />
         );

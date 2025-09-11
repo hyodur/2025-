@@ -5,6 +5,7 @@ import { PlayerData } from '../GameApp';
 interface ShopScreenProps {
   playerData: PlayerData;
   onPurchase: (itemType: 'character' | 'background', itemId: string, price: number) => boolean;
+  onSkinChange: (type: 'character' | 'background', skinId: string) => void;
   onNavigate: (screen: 'main' | 'game' | 'shop' | 'profile' | 'missions') => void;
 }
 
@@ -141,6 +142,12 @@ const ItemRequirement = styled.div<{ $canUnlock: boolean }>`
   margin-bottom: 1rem;
 `;
 
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
 const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean; $canUnlock: boolean }>`
   background: ${props => {
     if (props.$owned) return '#10b981';
@@ -156,6 +163,26 @@ const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean; $ca
   font-weight: bold;
   cursor: ${props => (props.$owned || !props.$canAfford || !props.$canUnlock) ? 'not-allowed' : 'pointer'};
   transition: all 0.2s;
+  flex: 1;
+  min-width: 80px;
+`;
+
+const EquipButton = styled.button<{ $isEquipped: boolean }>`
+  background: ${props => props.$isEquipped ? '#ef4444' : '#f59e0b'};
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  min-width: 60px;
+  
+  &:hover {
+    background: ${props => props.$isEquipped ? '#dc2626' : '#d97706'};
+  }
   
   &:hover {
     transform: ${props => (props.$owned || !props.$canAfford || !props.$canUnlock) ? 'none' : 'scale(1.05)'};
@@ -198,7 +225,7 @@ const backgroundItems: ShopItem[] = [
   { id: 'space', name: '우주', description: '신비한 우주 배경', price: 150, icon: '🌌', requiredLevel: 10 }
 ];
 
-export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, onNavigate }) => {
+export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, onSkinChange, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<'character' | 'background'>('character');
   const [purchaseMessage, setPurchaseMessage] = useState('');
 
@@ -276,21 +303,53 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
               <ItemRequirement $canUnlock={canUnlock}>
                 {canUnlock ? `✅ 레벨 ${item.requiredLevel} 달성` : `🔒 레벨 ${item.requiredLevel} 필요`}
               </ItemRequirement>
-              <PurchaseButton
-                $canAfford={canAfford}
-                $owned={isOwned}
-                $canUnlock={canUnlock}
-                onClick={() => !isOwned && canAfford && canUnlock && handlePurchase(activeTab, item.id, item.price)}
-              >
-                {isOwned 
-                  ? '보유중' 
-                  : !canUnlock 
+              {isOwned ? (
+                <ButtonContainer>
+                  <PurchaseButton
+                    $canAfford={true}
+                    $owned={true}
+                    $canUnlock={true}
+                    onClick={() => {}}
+                  >
+                    보유중
+                  </PurchaseButton>
+                  <EquipButton
+                    $isEquipped={
+                      activeTab === 'character' 
+                        ? playerData.characterSkin === item.id 
+                        : playerData.backgroundSkin === item.id
+                    }
+                    onClick={() => {
+                      onSkinChange(activeTab, item.id);
+                      setPurchaseMessage(
+                        activeTab === 'character' 
+                          ? `${item.name} 캐릭터를 착용했어요! 🎭` 
+                          : `${item.name} 배경을 착용했어요! 🎨`
+                      );
+                      setTimeout(() => setPurchaseMessage(''), 2000);
+                    }}
+                  >
+                    {activeTab === 'character' 
+                      ? (playerData.characterSkin === item.id ? '착용중' : '착용')
+                      : (playerData.backgroundSkin === item.id ? '착용중' : '착용')
+                    }
+                  </EquipButton>
+                </ButtonContainer>
+              ) : (
+                <PurchaseButton
+                  $canAfford={canAfford}
+                  $owned={false}
+                  $canUnlock={canUnlock}
+                  onClick={() => canAfford && canUnlock && handlePurchase(activeTab, item.id, item.price)}
+                >
+                  {!canUnlock 
                     ? '레벨 부족' 
                     : canAfford 
                       ? '구매하기' 
                       : '코인 부족'
-                }
-              </PurchaseButton>
+                  }
+                </PurchaseButton>
+              )}
             </ItemCard>
           );
         })}
