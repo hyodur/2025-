@@ -209,15 +209,17 @@ interface ShopItem {
 }
 
 const characterItems: ShopItem[] = [
+  { id: 'default', name: '계산기', description: '기본 계산기 친구 (무료)', price: 0, icon: '🧮', requiredLevel: 1 },
   { id: 'cat', name: '고양이', description: '귀여운 고양이 친구', price: 80, icon: '🐱', requiredLevel: 2 },
   { id: 'dog', name: '강아지', description: '충실한 강아지 친구', price: 100, icon: '🐶', requiredLevel: 3 },
   { id: 'panda', name: '판다', description: '사랑스러운 판다', price: 120, icon: '🐼', requiredLevel: 4 },
   { id: 'lion', name: '사자', description: '용감한 사자', price: 150, icon: '🦁', requiredLevel: 6 },
-  { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 },
-  { id: 'robot', name: '로봇', description: '미래의 로봇', price: 180, icon: '🤖', requiredLevel: 7 }
+  { id: 'robot', name: '로봇', description: '미래의 로봇', price: 180, icon: '🤖', requiredLevel: 7 },
+  { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 }
 ];
 
 const backgroundItems: ShopItem[] = [
+  { id: 'default', name: '클래식', description: '깔끔한 기본 배경 (무료)', price: 0, icon: '📚', requiredLevel: 1 },
   { id: 'rainbow', name: '무지개', description: '화려한 무지개 배경', price: 60, icon: '🌈', requiredLevel: 2 },
   { id: 'ocean', name: '바다', description: '시원한 바다 배경', price: 80, icon: '🌊', requiredLevel: 3 },
   { id: 'forest', name: '숲', description: '푸른 숲 배경', price: 100, icon: '🌲', requiredLevel: 5 },
@@ -290,7 +292,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
       <ItemGrid>
         {currentItems.map(item => {
           const isOwned = ownedItems.includes(item.id);
-          const canAfford = playerData.coins >= item.price;
+          const canAfford = item.price === 0 || playerData.coins >= item.price;
           const canUnlock = playerData.level >= item.requiredLevel;
           
           return (
@@ -299,7 +301,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
               <ItemIcon style={{ opacity: canUnlock ? 1 : 0.4 }}>{item.icon}</ItemIcon>
               <ItemName>{item.name}</ItemName>
               <ItemDescription>{item.description}</ItemDescription>
-              <ItemPrice>{item.price} 코인</ItemPrice>
+              <ItemPrice>{item.price === 0 ? '무료! 🎁' : `${item.price} 코인`}</ItemPrice>
               <ItemRequirement $canUnlock={canUnlock}>
                 {canUnlock ? `✅ 레벨 ${item.requiredLevel} 달성` : `🔒 레벨 ${item.requiredLevel} 필요`}
               </ItemRequirement>
@@ -340,13 +342,15 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
                   $canAfford={canAfford}
                   $owned={false}
                   $canUnlock={canUnlock}
-                  onClick={() => canAfford && canUnlock && handlePurchase(activeTab, item.id, item.price)}
+                  onClick={() => canUnlock && (item.price === 0 || canAfford) && handlePurchase(activeTab, item.id, item.price)}
                 >
                   {!canUnlock 
                     ? '레벨 부족' 
-                    : canAfford 
-                      ? '구매하기' 
-                      : '코인 부족'
+                    : item.price === 0
+                      ? '무료 획득'
+                      : canAfford 
+                        ? '구매하기' 
+                        : '코인 부족'
                   }
                 </PurchaseButton>
               )}
