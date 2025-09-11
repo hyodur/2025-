@@ -377,6 +377,17 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
         // Regular mixed number handling
         if (!mixedDenominatorInput) return;
         if (whole === 0 && numerator === 0) return;
+        
+        // 대분수에서는 분수 부분이 진분수여야 함 (분자 < 분모)
+        if (numerator >= denominator) {
+          setMessage('대분수에서 분수 부분은 진분수여야 해요! (분자 < 분모) 🤔');
+          setIsCorrect(false);
+          setTimeout(() => {
+            setMessage('');
+          }, 3000);
+          return;
+        }
+        
         userAnswer = simplifyFraction(mixedToImproper(whole, numerator, denominator));
       }
     }
