@@ -311,13 +311,23 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         <ProfileSection>
           <PlayerAvatar $characterSkin={playerData.characterSkin} />
           <PlayerName>{playerData.name}</PlayerName>
-          <PlayerLevel>레벨 {playerData.level}</PlayerLevel>
-          <ExpBar>
-            <ExpFill $percentage={expPercentage} />
-          </ExpBar>
-          <ExpText>
-            경험치: {playerData.exp} / {playerData.expToNext}
-          </ExpText>
+          <PlayerLevel>
+            레벨 {playerData.level} {playerData.level >= 10 ? '(최대 레벨)' : ''}
+          </PlayerLevel>
+          {playerData.level < 10 ? (
+            <>
+              <ExpBar>
+                <ExpFill $percentage={expPercentage} />
+              </ExpBar>
+              <ExpText>
+                경험치: {playerData.exp} / {playerData.expToNext}
+              </ExpText>
+            </>
+          ) : (
+            <ExpText style={{ color: '#f59e0b', fontWeight: 'bold', fontSize: '1.1rem' }}>
+              🏆 최대 레벨에 도달했습니다! 🏆
+            </ExpText>
+          )}
         </ProfileSection>
 
         <StatsSection>

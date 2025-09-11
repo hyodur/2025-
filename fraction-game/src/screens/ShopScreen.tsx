@@ -131,12 +131,20 @@ const ItemPrice = styled.div`
   font-size: 1.2rem;
   font-weight: bold;
   color: #f59e0b;
+  margin-bottom: 0.5rem;
+`;
+
+const ItemRequirement = styled.div<{ $canUnlock: boolean }>`
+  font-size: 0.9rem;
+  color: ${props => props.$canUnlock ? '#10b981' : '#ef4444'};
+  font-weight: bold;
   margin-bottom: 1rem;
 `;
 
-const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean }>`
+const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean; $canUnlock: boolean }>`
   background: ${props => {
     if (props.$owned) return '#10b981';
+    if (!props.$canUnlock) return '#9ca3af';
     if (props.$canAfford) return 'linear-gradient(135deg, #6366f1, #8b5cf6)';
     return '#9ca3af';
   }};
@@ -146,11 +154,11 @@ const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean }>`
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: bold;
-  cursor: ${props => (props.$owned || !props.$canAfford) ? 'not-allowed' : 'pointer'};
+  cursor: ${props => (props.$owned || !props.$canAfford || !props.$canUnlock) ? 'not-allowed' : 'pointer'};
   transition: all 0.2s;
   
   &:hover {
-    transform: ${props => (props.$owned || !props.$canAfford) ? 'none' : 'scale(1.05)'};
+    transform: ${props => (props.$owned || !props.$canAfford || !props.$canUnlock) ? 'none' : 'scale(1.05)'};
   }
 `;
 
@@ -170,23 +178,24 @@ interface ShopItem {
   description: string;
   price: number;
   icon: string;
+  requiredLevel: number;
 }
 
 const characterItems: ShopItem[] = [
-  { id: 'cat', name: '고양이', description: '귀여운 고양이 친구', price: 100, icon: '🐱' },
-  { id: 'dog', name: '강아지', description: '충실한 강아지 친구', price: 100, icon: '🐶' },
-  { id: 'panda', name: '판다', description: '사랑스러운 판다', price: 150, icon: '🐼' },
-  { id: 'lion', name: '사자', description: '용감한 사자', price: 200, icon: '🦁' },
-  { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 300, icon: '🦄' },
-  { id: 'robot', name: '로봇', description: '미래의 로봇', price: 250, icon: '🤖' }
+  { id: 'cat', name: '고양이', description: '귀여운 고양이 친구', price: 80, icon: '🐱', requiredLevel: 2 },
+  { id: 'dog', name: '강아지', description: '충실한 강아지 친구', price: 100, icon: '🐶', requiredLevel: 3 },
+  { id: 'panda', name: '판다', description: '사랑스러운 판다', price: 120, icon: '🐼', requiredLevel: 4 },
+  { id: 'lion', name: '사자', description: '용감한 사자', price: 150, icon: '🦁', requiredLevel: 6 },
+  { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 },
+  { id: 'robot', name: '로봇', description: '미래의 로봇', price: 180, icon: '🤖', requiredLevel: 7 }
 ];
 
 const backgroundItems: ShopItem[] = [
-  { id: 'rainbow', name: '무지개', description: '화려한 무지개 배경', price: 80, icon: '🌈' },
-  { id: 'ocean', name: '바다', description: '시원한 바다 배경', price: 80, icon: '🌊' },
-  { id: 'forest', name: '숲', description: '푸른 숲 배경', price: 100, icon: '🌲' },
-  { id: 'sunset', name: '노을', description: '아름다운 노을 배경', price: 120, icon: '🌅' },
-  { id: 'space', name: '우주', description: '신비한 우주 배경', price: 150, icon: '🌌' }
+  { id: 'rainbow', name: '무지개', description: '화려한 무지개 배경', price: 60, icon: '🌈', requiredLevel: 2 },
+  { id: 'ocean', name: '바다', description: '시원한 바다 배경', price: 80, icon: '🌊', requiredLevel: 3 },
+  { id: 'forest', name: '숲', description: '푸른 숲 배경', price: 100, icon: '🌲', requiredLevel: 5 },
+  { id: 'sunset', name: '노을', description: '아름다운 노을 배경', price: 120, icon: '🌅', requiredLevel: 7 },
+  { id: 'space', name: '우주', description: '신비한 우주 배경', price: 150, icon: '🌌', requiredLevel: 10 }
 ];
 
 export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, onNavigate }) => {
@@ -255,20 +264,32 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
         {currentItems.map(item => {
           const isOwned = ownedItems.includes(item.id);
           const canAfford = playerData.coins >= item.price;
+          const canUnlock = playerData.level >= item.requiredLevel;
           
           return (
             <ItemCard key={item.id} $owned={isOwned}>
               {isOwned && <OwnedBadge>보유중</OwnedBadge>}
-              <ItemIcon>{item.icon}</ItemIcon>
+              <ItemIcon style={{ opacity: canUnlock ? 1 : 0.4 }}>{item.icon}</ItemIcon>
               <ItemName>{item.name}</ItemName>
               <ItemDescription>{item.description}</ItemDescription>
               <ItemPrice>{item.price} 코인</ItemPrice>
+              <ItemRequirement $canUnlock={canUnlock}>
+                {canUnlock ? `✅ 레벨 ${item.requiredLevel} 달성` : `🔒 레벨 ${item.requiredLevel} 필요`}
+              </ItemRequirement>
               <PurchaseButton
                 $canAfford={canAfford}
                 $owned={isOwned}
-                onClick={() => !isOwned && canAfford && handlePurchase(activeTab, item.id, item.price)}
+                $canUnlock={canUnlock}
+                onClick={() => !isOwned && canAfford && canUnlock && handlePurchase(activeTab, item.id, item.price)}
               >
-                {isOwned ? '보유중' : canAfford ? '구매하기' : '코인 부족'}
+                {isOwned 
+                  ? '보유중' 
+                  : !canUnlock 
+                    ? '레벨 부족' 
+                    : canAfford 
+                      ? '구매하기' 
+                      : '코인 부족'
+                }
               </PurchaseButton>
             </ItemCard>
           );
@@ -277,26 +298,54 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
 
       <div style={{
         marginTop: '3rem',
-        textAlign: 'center',
-        background: 'rgba(255, 255, 255, 0.1)',
-        borderRadius: '1rem',
-        padding: '2rem',
-        maxWidth: '600px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '2rem',
+        maxWidth: '1000px',
         margin: '3rem auto 0'
       }}>
-        <h3 style={{ marginTop: 0 }}>💡 코인을 얻는 방법</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div>
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>✅</div>
-            <div>문제를 맞힐 때마다<br/>5 + 연속 보너스</div>
+        <div style={{
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '1rem',
+          padding: '2rem'
+        }}>
+          <h3 style={{ marginTop: 0 }}>💡 코인을 얻는 방법</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+            <div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>✅</div>
+              <div>문제를 맞힐 때마다<br/>5 + 연속 보너스</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📈</div>
+              <div>레벨업 할 때마다<br/>레벨 × 10 코인</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
+              <div>일일 미션 완료시<br/>20~40 코인</div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📈</div>
-            <div>레벨업 할 때마다<br/>레벨 × 10 코인</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
-            <div>일일 미션 완료시<br/>20~40 코인</div>
+        </div>
+
+        <div style={{
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '1rem',
+          padding: '2rem'
+        }}>
+          <h3 style={{ marginTop: 0 }}>🔓 레벨별 해금 아이템</h3>
+          <div style={{ fontSize: '0.9rem', lineHeight: '1.8' }}>
+            <div>🐱 레벨 2: 고양이</div>
+            <div>🌈 레벨 2: 무지개 배경</div>
+            <div>🐶 레벨 3: 강아지</div>
+            <div>🌊 레벨 3: 바다 배경</div>
+            <div>🐼 레벨 4: 판다</div>
+            <div>🌲 레벨 5: 숲 배경</div>
+            <div>🦁 레벨 6: 사자</div>
+            <div>🤖 레벨 7: 로봇</div>
+            <div>🌅 레벨 7: 노을 배경</div>
+            <div>🦄 레벨 8: 유니콘</div>
+            <div style={{ color: '#fbbf24', fontWeight: 'bold' }}>🌌 레벨 10: 우주 배경 (최고급!)</div>
           </div>
         </div>
       </div>

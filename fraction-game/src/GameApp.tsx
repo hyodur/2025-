@@ -61,9 +61,13 @@ const createDefaultPlayer = (): PlayerData => ({
   lastMissionReset: new Date().toDateString()
 });
 
+// 최대 레벨 설정
+const MAX_LEVEL = 10;
+
 // 레벨업 경험치 계산
 const getExpForLevel = (level: number): number => {
-  return Math.floor(100 * Math.pow(1.2, level - 1));
+  if (level >= MAX_LEVEL) return 999999; // 최대 레벨에서는 더 이상 레벨업 안됨
+  return Math.floor(100 * Math.pow(1.3, level - 1)); // 조금 더 빠르게 증가
 };
 
 // 일일 미션 생성
@@ -151,13 +155,28 @@ export default function GameApp() {
   const checkLevelUp = (data: PlayerData): PlayerData => {
     let newData = { ...data };
     
-    while (newData.exp >= newData.expToNext) {
+    while (newData.exp >= newData.expToNext && newData.level < MAX_LEVEL) {
       newData.exp -= newData.expToNext;
       newData.level++;
-      newData.expToNext = getExpForLevel(newData.level + 1);
       
-      // 레벨업 보너스 코인
-      newData.coins += newData.level * 10;
+      // 최대 레벨 도달 시
+      if (newData.level >= MAX_LEVEL) {
+        newData.level = MAX_LEVEL;
+        newData.exp = 0;
+        newData.expToNext = 0;
+        newData.coins += MAX_LEVEL * 20; // 최대 레벨 달성 보너스
+        break;
+      } else {
+        newData.expToNext = getExpForLevel(newData.level + 1);
+        // 레벨업 보너스 코인
+        newData.coins += newData.level * 10;
+      }
+    }
+    
+    // 최대 레벨에서는 경험치 누적 방지
+    if (newData.level >= MAX_LEVEL) {
+      newData.exp = 0;
+      newData.expToNext = 0;
     }
     
     return newData;
