@@ -123,6 +123,10 @@ export default function GameApp() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
+
+         if (parsed.level < 25) {
+          parsed.expToNext = getExpForLevel(parsed.level + 1);
+        }
         
         // 일일 미션 리셋 확인
         const today = new Date().toDateString();
