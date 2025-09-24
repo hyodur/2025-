@@ -215,7 +215,13 @@ const characterItems: ShopItem[] = [
   { id: 'panda', name: '판다', description: '사랑스러운 판다', price: 120, icon: '🐼', requiredLevel: 4 },
   { id: 'lion', name: '사자', description: '용감한 사자', price: 150, icon: '🦁', requiredLevel: 6 },
   { id: 'robot', name: '로봇', description: '미래의 로봇', price: 180, icon: '🤖', requiredLevel: 7 },
-  { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 }
+ { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 },
+  // 레전드리 등급 (10레벨+)
+  { id: 'dragon', name: '드래곤', description: '🔥 전설의 수학 드래곤', price: 300, icon: '🐲', requiredLevel: 12, rarity: 'legendary' },
+  { id: 'wizard', name: '마법사', description: '✨ 분수를 다루는 마법사', price: 400, icon: '🧙‍♀️', requiredLevel: 15, rarity: 'legendary' },
+  { id: 'alien', name: '외계인', description: '👽 수학 천재 외계인', price: 350, icon: '👽', requiredLevel: 13, rarity: 'legendary' },
+  { id: 'superhero', name: '슈퍼히어로', description: '🦸 수학 슈퍼히어로', price: 450, icon: '🦸‍♂️', requiredLevel: 18, rarity: 'legendary' },
+  { id: 'king', name: '분수 왕', description: '👑 분수 왕국의 왕', price: 500, icon: '👑', requiredLevel: 20, rarity: 'legendary' }
 ];
 
 const backgroundItems: ShopItem[] = [
@@ -224,7 +230,13 @@ const backgroundItems: ShopItem[] = [
   { id: 'ocean', name: '바다', description: '시원한 바다 배경', price: 80, icon: '🌊', requiredLevel: 3 },
   { id: 'forest', name: '숲', description: '푸른 숲 배경', price: 100, icon: '🌲', requiredLevel: 5 },
   { id: 'sunset', name: '노을', description: '아름다운 노을 배경', price: 120, icon: '🌅', requiredLevel: 7 },
-  { id: 'space', name: '우주', description: '신비한 우주 배경', price: 150, icon: '🌌', requiredLevel: 10 }
+  { id: 'space', name: '우주', description: '신비한 우주 배경', price: 150, icon: '🌌', requiredLevel: 10 },
+  // 레전드리 등급 (10레벨+)
+  { id: 'castle', name: '마법성', description: '🏰 마법사의 신비한 성', price: 250, icon: '🏰', requiredLevel: 12, rarity: 'legendary' },
+  { id: 'volcano', name: '화산', description: '🌋 활활 타오르는 화산', price: 300, icon: '🌋', requiredLevel: 15, rarity: 'legendary' },
+  { id: 'underwater', name: '해저도시', description: '🐠 신비한 해저 도시', price: 280, icon: '🏙️', requiredLevel: 13, rarity: 'legendary' },
+  { id: 'circus', name: '서커스', description: '🎪 신나는 서커스장', price: 320, icon: '🎪', requiredLevel: 17, rarity: 'legendary' },
+  { id: 'temple', name: '수학신전', description: '🏛️ 고대 수학의 신전', price: 400, icon: '🏛️', requiredLevel: 20, rarity: 'legendary' }
 ];
 
 export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, onSkinChange, onNavigate }) => {

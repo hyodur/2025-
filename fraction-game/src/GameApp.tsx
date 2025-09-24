@@ -62,12 +62,16 @@ const createDefaultPlayer = (): PlayerData => ({
 });
 
 // 최대 레벨 설정
-const MAX_LEVEL = 10;
+const MAX_LEVEL = 25;
 
 // 레벨업 경험치 계산
 const getExpForLevel = (level: number): number => {
   if (level >= MAX_LEVEL) return 999999; // 최대 레벨에서는 더 이상 레벨업 안됨
-  return Math.floor(100 * Math.pow(1.3, level - 1)); // 조금 더 빠르게 증가
+  if (level <= 10) {
+    return Math.floor(100 * Math.pow(1.3, level - 1)); // 1-10레벨: 기존대로
+  }
+  // 11레벨 이상: 적당한 경험치 (너무 어렵지 않게)  
+  return Math.floor(200 * Math.pow(1.15, level - 10)); // 11레벨부터 적당히
 };
 
 // 일일 미션 생성
@@ -121,7 +125,12 @@ export default function GameApp() {
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        console.log('로드된 데이터:', { level: parsed.level, coins: parsed.coins, exp: parsed.exp });
+console.log('로드된 데이터:', { level: parsed.level, coins: parsed.coins, exp: parsed.exp });
+        
+        // 데이터 마이그레이션: 기존 유저의 expToNext 값 수정
+        if (parsed.level < 25) {
+          parsed.expToNext = getExpForLevel(parsed.level + 1);
+        }
         
         // 일일 미션 리셋 확인
         const today = new Date().toDateString();
