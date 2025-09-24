@@ -120,11 +120,15 @@ export default function GameApp() {
   // 로컬 스토리지에서 데이터 로드
   useEffect(() => {
     const savedData = localStorage.getItem('fractionGameData');
+    console.log('저장된 데이터 확인:', savedData ? '데이터 있음' : '데이터 없음');
+    
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-
-         if (parsed.level < 25) {
+console.log('로드된 데이터:', { level: parsed.level, coins: parsed.coins, exp: parsed.exp });
+        
+        // 데이터 마이그레이션: 기존 유저의 expToNext 값 수정
+        if (parsed.level < 25) {
           parsed.expToNext = getExpForLevel(parsed.level + 1);
         }
         
@@ -144,6 +148,7 @@ export default function GameApp() {
         setPlayerData(defaultData);
       }
     } else {
+      console.log('새 사용자 - 기본 데이터로 시작');
       // 새 사용자: 일일 미션 생성
       const defaultData = createDefaultPlayer();
       defaultData.dailyMissions = generateDailyMissions();
@@ -153,10 +158,31 @@ export default function GameApp() {
     setIsLoading(false);
   }, []);
 
+  // 페이지 언로드 시 데이터 저장
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        localStorage.setItem('fractionGameData', JSON.stringify(playerData));
+        console.log('페이지 종료 시 데이터 저장');
+      } catch (error) {
+        console.error('페이지 종료 시 저장 실패:', error);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [playerData]);
+
   // 데이터 저장
   const savePlayerData = (data: PlayerData) => {
-    localStorage.setItem('fractionGameData', JSON.stringify(data));
-    setPlayerData(data);
+    try {
+      const dataToSave = JSON.stringify(data);
+      localStorage.setItem('fractionGameData', dataToSave);
+      console.log('게임 데이터 저장 완료:', { level: data.level, coins: data.coins, exp: data.exp });
+      setPlayerData(data);
+    } catch (error) {
+      console.error('데이터 저장 실패:', error);
+    }
   };
 
   // 레벨업 처리
@@ -323,6 +349,7 @@ export default function GameApp() {
           <ShopScreen 
             playerData={playerData}
             onPurchase={handlePurchase}
+            onSkinChange={handleSkinChange}
             onNavigate={setCurrentScreen}
           />
         );

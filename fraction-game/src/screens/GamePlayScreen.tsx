@@ -302,6 +302,32 @@ function formatFraction(fraction: Fraction): string {
   return `${fraction.numerator}/${fraction.denominator}`;
 }
 
+// 4학년 수준에 맞춰 원래 분모 기준으로 답을 표시 (약분하지 않음)
+function formatAnswerFor4thGrade(answer: Fraction, originalDenominator: number): string {
+  // 답을 원래 분모 기준으로 변환 (약분 하지 않음)
+  const convertedNumerator = (answer.numerator * originalDenominator) / answer.denominator;
+  
+  // 자연수인 경우
+  if (convertedNumerator % originalDenominator === 0) {
+    return (convertedNumerator / originalDenominator).toString();
+  }
+  
+  // 가분수인 경우 (대분수로 표현)
+  if (convertedNumerator >= originalDenominator) {
+    const whole = Math.floor(convertedNumerator / originalDenominator);
+    const remainder = convertedNumerator % originalDenominator;
+    
+    if (remainder === 0) {
+      return whole.toString();
+    }
+    
+    return `${whole} ${remainder}/${originalDenominator}`;
+  }
+  
+  // 진분수인 경우
+  return `${convertedNumerator}/${originalDenominator}`;
+}
+
 const FractionDisplay: React.FC<{ fraction: Fraction }> = ({ fraction }) => {
   if (fraction.numerator >= fraction.denominator && fraction.denominator !== 1) {
     const whole = Math.floor(fraction.numerator / fraction.denominator);
@@ -404,7 +430,9 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
       setMessage(`정답입니다! 🎉 연속 ${newStats.streak}개 맞혔어요!`);
     } else {
       newStats.streak = 0;
-      setMessage(`아쉬워요! 😊 정답: ${formatFraction(problem.answer)}`);
+      // 4학년 수준에 맞춰 원래 분모 기준으로 정답 표시
+      const originalDenominator = problem.fraction1.denominator; // 동분모 연산이므로 분모는 같음
+      setMessage(`아쉬워요! 😊 정답: ${formatAnswerFor4thGrade(problem.answer, originalDenominator)}`);
     }
     
     setSessionStats(newStats);
@@ -425,6 +453,17 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
     if (e.key === 'Enter') {
       handleSubmit();
     }
+  };
+
+  // 4학년 수준에 맞춰 음수 입력 차단
+  const handlePositiveNumberInput = (value: string): string => {
+    // 음수 기호 제거
+    const cleanValue = value.replace(/-/g, '');
+    // 0으로 시작하는 다중 자릿수 방지 (00, 01 등)
+    if (cleanValue.length > 1 && cleanValue[0] === '0') {
+      return cleanValue.substring(1);
+    }
+    return cleanValue;
   };
 
   const isSubmitEnabled = () => {
@@ -484,17 +523,19 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
                 <FractionInput
                   type="number"
                   value={numeratorInput}
-                  onChange={(e) => setNumeratorInput(e.target.value)}
+                  onChange={(e) => setNumeratorInput(handlePositiveNumberInput(e.target.value))}
                   onKeyPress={handleKeyPress}
                   placeholder="분자"
+                  min="0"
                 />
                 <FractionLine />
                 <FractionInput
                   type="number"
                   value={denominatorInput}
-                  onChange={(e) => setDenominatorInput(e.target.value)}
+                  onChange={(e) => setDenominatorInput(handlePositiveNumberInput(e.target.value))}
                   onKeyPress={handleKeyPress}
                   placeholder="분모"
+                  min="1"
                 />
               </div>
             ) : (
@@ -502,7 +543,7 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
                 <FractionInput
                   type="number"
                   value={wholeInput}
-                  onChange={(e) => setWholeInput(e.target.value)}
+                  onChange={(e) => setWholeInput(handlePositiveNumberInput(e.target.value))}
                   onKeyPress={handleKeyPress}
                   placeholder="자연수"
                   min="0"
@@ -512,7 +553,7 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
                   <FractionInput
                     type="number"
                     value={mixedNumeratorInput}
-                    onChange={(e) => setMixedNumeratorInput(e.target.value)}
+                    onChange={(e) => setMixedNumeratorInput(handlePositiveNumberInput(e.target.value))}
                     onKeyPress={handleKeyPress}
                     placeholder="분자"
                     min="0"
@@ -521,7 +562,7 @@ export const GamePlayScreen: React.FC<GamePlayScreenProps> = ({
                   <FractionInput
                     type="number"
                     value={mixedDenominatorInput}
-                    onChange={(e) => setMixedDenominatorInput(e.target.value)}
+                    onChange={(e) => setMixedDenominatorInput(handlePositiveNumberInput(e.target.value))}
                     onKeyPress={handleKeyPress}
                     placeholder="분모"
                     min="1"

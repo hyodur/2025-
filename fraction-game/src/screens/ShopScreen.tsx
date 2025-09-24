@@ -5,6 +5,7 @@ import { PlayerData } from '../GameApp';
 interface ShopScreenProps {
   playerData: PlayerData;
   onPurchase: (itemType: 'character' | 'background', itemId: string, price: number) => boolean;
+  onSkinChange: (type: 'character' | 'background', skinId: string) => void;
   onNavigate: (screen: 'main' | 'game' | 'shop' | 'profile' | 'missions') => void;
 }
 
@@ -141,6 +142,12 @@ const ItemRequirement = styled.div<{ $canUnlock: boolean }>`
   margin-bottom: 1rem;
 `;
 
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
 const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean; $canUnlock: boolean }>`
   background: ${props => {
     if (props.$owned) return '#10b981';
@@ -156,6 +163,26 @@ const PurchaseButton = styled.button<{ $canAfford: boolean; $owned: boolean; $ca
   font-weight: bold;
   cursor: ${props => (props.$owned || !props.$canAfford || !props.$canUnlock) ? 'not-allowed' : 'pointer'};
   transition: all 0.2s;
+  flex: 1;
+  min-width: 80px;
+`;
+
+const EquipButton = styled.button<{ $isEquipped: boolean }>`
+  background: ${props => props.$isEquipped ? '#ef4444' : '#f59e0b'};
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  min-width: 60px;
+  
+  &:hover {
+    background: ${props => props.$isEquipped ? '#dc2626' : '#d97706'};
+  }
   
   &:hover {
     transform: ${props => (props.$owned || !props.$canAfford || !props.$canUnlock) ? 'none' : 'scale(1.05)'};
@@ -188,7 +215,7 @@ const characterItems: ShopItem[] = [
   { id: 'panda', name: '판다', description: '사랑스러운 판다', price: 120, icon: '🐼', requiredLevel: 4 },
   { id: 'lion', name: '사자', description: '용감한 사자', price: 150, icon: '🦁', requiredLevel: 6 },
   { id: 'robot', name: '로봇', description: '미래의 로봇', price: 180, icon: '🤖', requiredLevel: 7 },
-  { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 },
+ { id: 'unicorn', name: '유니콘', description: '마법의 유니콘', price: 200, icon: '🦄', requiredLevel: 8 },
   // 레전드리 등급 (10레벨+)
   { id: 'dragon', name: '드래곤', description: '🔥 전설의 수학 드래곤', price: 300, icon: '🐲', requiredLevel: 12, rarity: 'legendary' },
   { id: 'wizard', name: '마법사', description: '✨ 분수를 다루는 마법사', price: 400, icon: '🧙‍♀️', requiredLevel: 15, rarity: 'legendary' },
@@ -212,7 +239,7 @@ const backgroundItems: ShopItem[] = [
   { id: 'temple', name: '수학신전', description: '🏛️ 고대 수학의 신전', price: 400, icon: '🏛️', requiredLevel: 20, rarity: 'legendary' }
 ];
 
-export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, onNavigate }) => {
+export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, onSkinChange, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<'character' | 'background'>('character');
   const [purchaseMessage, setPurchaseMessage] = useState('');
 
@@ -277,7 +304,7 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
       <ItemGrid>
         {currentItems.map(item => {
           const isOwned = ownedItems.includes(item.id);
-          const canAfford = playerData.coins >= item.price;
+          const canAfford = item.price === 0 || playerData.coins >= item.price;
           const canUnlock = playerData.level >= item.requiredLevel;
           
           return (
@@ -286,25 +313,59 @@ export const ShopScreen: React.FC<ShopScreenProps> = ({ playerData, onPurchase, 
               <ItemIcon style={{ opacity: canUnlock ? 1 : 0.4 }}>{item.icon}</ItemIcon>
               <ItemName>{item.name}</ItemName>
               <ItemDescription>{item.description}</ItemDescription>
-              <ItemPrice>{item.price} 코인</ItemPrice>
+              <ItemPrice>{item.price === 0 ? '무료! 🎁' : `${item.price} 코인`}</ItemPrice>
               <ItemRequirement $canUnlock={canUnlock}>
                 {canUnlock ? `✅ 레벨 ${item.requiredLevel} 달성` : `🔒 레벨 ${item.requiredLevel} 필요`}
               </ItemRequirement>
-              <PurchaseButton
-                $canAfford={canAfford}
-                $owned={isOwned}
-                $canUnlock={canUnlock}
-                onClick={() => !isOwned && canAfford && canUnlock && handlePurchase(activeTab, item.id, item.price)}
-              >
-                {isOwned 
-                  ? '보유중' 
-                  : !canUnlock 
+              {isOwned ? (
+                <ButtonContainer>
+                  <PurchaseButton
+                    $canAfford={true}
+                    $owned={true}
+                    $canUnlock={true}
+                    onClick={() => {}}
+                  >
+                    보유중
+                  </PurchaseButton>
+                  <EquipButton
+                    $isEquipped={
+                      activeTab === 'character' 
+                        ? playerData.characterSkin === item.id 
+                        : playerData.backgroundSkin === item.id
+                    }
+                    onClick={() => {
+                      onSkinChange(activeTab, item.id);
+                      setPurchaseMessage(
+                        activeTab === 'character' 
+                          ? `${item.name} 캐릭터를 착용했어요! 🎭` 
+                          : `${item.name} 배경을 착용했어요! 🎨`
+                      );
+                      setTimeout(() => setPurchaseMessage(''), 2000);
+                    }}
+                  >
+                    {activeTab === 'character' 
+                      ? (playerData.characterSkin === item.id ? '착용중' : '착용')
+                      : (playerData.backgroundSkin === item.id ? '착용중' : '착용')
+                    }
+                  </EquipButton>
+                </ButtonContainer>
+              ) : (
+                <PurchaseButton
+                  $canAfford={canAfford}
+                  $owned={false}
+                  $canUnlock={canUnlock}
+                  onClick={() => canUnlock && (item.price === 0 || canAfford) && handlePurchase(activeTab, item.id, item.price)}
+                >
+                  {!canUnlock 
                     ? '레벨 부족' 
-                    : canAfford 
-                      ? '구매하기' 
-                      : '코인 부족'
-                }
-              </PurchaseButton>
+                    : item.price === 0
+                      ? '무료 획득'
+                      : canAfford 
+                        ? '구매하기' 
+                        : '코인 부족'
+                  }
+                </PurchaseButton>
+              )}
             </ItemCard>
           );
         })}
