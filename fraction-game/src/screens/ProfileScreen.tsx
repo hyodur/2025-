@@ -312,9 +312,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
           <PlayerAvatar $characterSkin={playerData.characterSkin} />
           <PlayerName>{playerData.name}</PlayerName>
           <PlayerLevel>
-            레벨 {playerData.level} {playerData.level >= 10 ? '(최대 레벨)' : ''}
+            레벨 {playerData.level} {playerData.level >= 25 ? '(최대 레벨)' : ''}
           </PlayerLevel>
-          {playerData.level < 10 ? (
+          {playerData.level < 25 ? (
             <>
               <ExpBar>
                 <ExpFill $percentage={expPercentage} />
