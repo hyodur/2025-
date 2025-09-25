@@ -178,10 +178,10 @@ export const MainScreen: React.FC<MainScreenProps> = ({ playerData, onNavigate }
       <Header>
         <PlayerInfo>
           <PlayerName>
-            Lv.{playerData.level}{playerData.level >= 10 ? ' MAX' : ''} {playerData.name}
+            Lv.{playerData.level}{playerData.level >= 25 ? ' MAX' : ''} {playerData.name}
           </PlayerName>
           <PlayerStats>
-            <span>⭐ {playerData.level >= 10 ? 'MAX' : `${playerData.exp}/${playerData.expToNext}`}</span>
+            <span>⭐ {playerData.level >= 25 ? 'MAX' : `${playerData.exp}/${playerData.expToNext}`}</span>
             <span>💰 {playerData.coins}</span>
             <span>📊 {accuracy}%</span>
           </PlayerStats>
