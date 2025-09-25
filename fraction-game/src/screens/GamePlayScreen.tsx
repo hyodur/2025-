@@ -29,6 +29,12 @@ const Container = styled.div<{ $backgroundSkin: string }>`
       case 'forest': return 'linear-gradient(135deg, #064e3b 0%, #166534 100%)';
       case 'sunset': return 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)';
       case 'space': return 'linear-gradient(135deg, #1e1b4b 0%, #581c87 100%)';
+      // 레전드리 배경들
+      case 'castle': return 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a855f7 100%)';
+      case 'volcano': return 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #f59e0b 100%)';
+      case 'underwater': return 'linear-gradient(135deg, #164e63 0%, #0891b2 50%, #06b6d4 100%)';
+      case 'circus': return 'linear-gradient(135deg, #dc2626 0%, #f59e0b 25%, #eab308 50%, #22c55e 75%, #3b82f6 100%)';
+      case 'temple': return 'linear-gradient(135deg, #a16207 0%, #ca8a04 50%, #fbbf24 100%)';
       default: return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
     }
   }};
